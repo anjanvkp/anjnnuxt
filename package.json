@@ -10,7 +10,10 @@
     "postinstall": "nuxt prepare"
   },
   "dependencies": {
+    "@ckeditor/ckeditor5-build-classic": "^44.3.0",
+    "@ckeditor/ckeditor5-vue": "^7.3.0",
     "@heroicons/vue": "^2.2.0",
+    "@tailwindcss/typography": "^0.5.16",
     "@types/jsonwebtoken": "^9.0.9",
     "bcryptjs": "^3.0.2",
     "dotenv": "^16.4.7",
@@ -19,7 +22,9 @@
     "firebase-admin": "^13.2.0",
     "google-auth-library": "^9.15.1",
     "googleapis": "^148.0.0",
+    "html-to-text": "^9.0.5",
     "html2pdf.js": "^0.10.3",
+    "isomorphic-dompurify": "^2.22.0",
     "jsonwebtoken": "^9.0.2",
     "jspdf": "^3.0.1",
     "jspdf-autotable": "^5.0.2",

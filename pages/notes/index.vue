@@ -35,7 +35,7 @@
               </button>
             </div>
           </div>
-          <p class="text-gray-600 whitespace-pre-wrap line-clamp-3">{{ note.content }}</p>
+          <div class="prose max-w-none" v-html="note.content"></div>
           <div class="mt-4 flex justify-between items-center">
             <div class="text-sm text-gray-500">
               Last updated: {{ formatDate(note.updatedAt || note.createdAt) }}
@@ -75,10 +75,14 @@
 import { ref, onMounted } from 'vue';
 import { useNotes } from '~/composables/useNotes';
 import type { Note } from '~/server/models/Note';
+import createDOMPurify from 'isomorphic-dompurify';
 
 definePageMeta({
   requiresAuth: true,
 });
+
+// Initialize DOMPurify
+const DOMPurify = createDOMPurify(window);
 
 // State
 const showNoteModal = ref(false);
@@ -88,6 +92,19 @@ const { notes, isLoading, fetchNotes, createNote, updateNote, deleteNote } = use
 // Fetch notes on component mount
 onMounted(async () => {
   await fetchNotes();
+  
+  // Sanitize existing notes content
+  notes.value = notes.value.map(note => ({
+    ...note,
+    content: DOMPurify.sanitize(note.content, {
+      ALLOWED_TAGS: [
+        'p', 'br', 'b', 'i', 'u', 'strong', 'em', 
+        'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+        'ul', 'ol', 'li', 'blockquote', 'a', 'img'
+      ],
+      ALLOWED_ATTR: ['href', 'src', 'alt', 'title', 'target']
+    })
+  }));
 });
 
 // Actions
@@ -172,5 +189,25 @@ return `${day}-${month}-${year}`;
   -webkit-box-orient: vertical;
   overflow: hidden;
   max-height: 4.5em; /* Fallback for non-webkit browsers */
+}
+
+/* Add Tailwind Typography styles for rendered HTML content */
+.prose {
+  max-width: 100%;
+}
+
+.prose img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.375rem;
+}
+
+.prose a {
+  color: #2563eb;
+  text-decoration: underline;
+}
+
+.prose a:hover {
+  color: #1d4ed8;
 }
 </style>

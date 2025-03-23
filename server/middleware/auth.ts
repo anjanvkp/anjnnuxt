@@ -1,6 +1,8 @@
 // server/middleware/auth.ts
-import { H3Event, createError } from 'h3';
+import { H3Event, createError, getCookie, setCookie } from 'h3';
 import { verifyToken } from '../utils/auth';
+import jwt from 'jsonwebtoken';
+import User from '../models/User';
 
 // List of public routes that don't require authentication
 const publicRoutes = [
@@ -36,19 +38,75 @@ export default defineEventHandler(async (event: H3Event) => {
   }
   
   try {
-    // Verify token and get user
-    const user = await verifyToken(event);
-    
-    // Type assertion to define user structure
-    interface User {
-      _id: string | { toString(): string };
+    const token = getCookie(event, 'token');
+    const refreshToken = getCookie(event, 'refreshToken');
+    const secret = process.env.JWT_SECRET;
+
+    if (!secret) {
+      throw new Error('JWT_SECRET is not defined');
     }
-    
-    // Attach user to event context for downstream handlers
-    event.context.user = user;
-    
-    // Add userId to event context for easier access in API handlers
-    event.context.userId = ((user as User)._id).toString();
+
+    if (!token && !refreshToken) {
+      throw createError({
+        statusCode: 401,
+        statusMessage: 'No authentication tokens provided'
+      });
+    }
+
+    if (token) {
+      try {
+        // Try to verify the access token
+        const decoded = jwt.verify(token, secret) as any;
+        const user = await User.findById(decoded.id);
+        if (user) {
+          event.context.user = user;
+          event.context.userId = user._id.toString();
+          return;
+        }
+      } catch (error: any) {
+        // If token verification fails and we have a refresh token, try to refresh
+        if (refreshToken && error.name === 'TokenExpiredError') {
+          try {
+            const decoded = jwt.verify(refreshToken, secret) as any;
+            const user = await User.findById(decoded.id);
+            
+            if (user) {
+              const tokenPayload = {
+                id: user._id,
+                username: user.username,
+                email: user.email,
+                fullname: user.fullname,
+                role: user.role
+              };
+
+              const newAccessToken = jwt.sign(tokenPayload, secret, { expiresIn: '15m' });
+              
+              // Set the new access token in cookie
+              setCookie(event, 'token', newAccessToken, {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === 'production',
+                sameSite: 'lax',
+                maxAge: 900 // 15 minutes
+              });
+
+              event.context.user = user;
+              event.context.userId = user._id.toString();
+              return;
+            }
+          } catch (refreshError) {
+            throw createError({
+              statusCode: 401,
+              statusMessage: 'Invalid refresh token'
+            });
+          }
+        }
+      }
+    }
+
+    throw createError({
+      statusCode: 401,
+      statusMessage: 'Authentication failed'
+    });
   } catch (error: any) {
     throw createError({
       statusCode: error.statusCode || 401,

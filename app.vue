@@ -1,4 +1,5 @@
 <template>
+<NuxtRouteAnnouncer />
   <div class="min-h-screen flex flex-col">
     <!-- Fixed Navbar at the top -->
     <Navbar class="fixed top-0 left-0 w-full z-50" />
@@ -74,6 +75,8 @@
     <!-- Fixed Footer at the bottom -->
     <Footer class="fixed bottom-0 left-0 w-full z-50" />
   </div>
+  <!-- Load rich text editor script -->
+  <Script src="/richtexteditor/rte.js" />
 </template>
 
 <script setup>

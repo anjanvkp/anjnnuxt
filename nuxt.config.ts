@@ -3,6 +3,19 @@ export default defineNuxtConfig({
   compatibilityDate: '2024-11-01',
   devtools: { enabled: true },
   modules: ['@nuxtjs/tailwindcss', '@nuxt/icon'],
+  
+  // Add static asset handling
+  app: {
+    head: {
+      script: [
+        { src: '/richtexteditor/rte.js' }
+      ],
+      link: [
+        { rel: 'stylesheet', href: '/richtexteditor/rte_theme_default.css' }
+      ]
+    }
+  },
+
   runtimeConfig: {
     emailHost: process.env.EMAIL_HOST,
     emailPort: process.env.EMAIL_PORT,

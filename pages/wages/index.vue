@@ -1,20 +1,21 @@
 <template>
-  <div class="max-w-10xl mx-auto py-6 sm:px-6 lg:px-8">
-    <div class="px-4 py-6 sm:px-0">
-      <div class="flex justify-between items-center mb-6">
-        <h1 class="text-3xl font-bold text-gray-900">Wages Management</h1>
+  <div class="max-w-full mx-auto py-6 px-4 sm:px-6 lg:px-8 min-h-screen">
+    <div class="flex flex-col h-full">
+      <!-- Header Section -->
+      <div class="mb-6">
+        <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">Wages Management</h1>
       </div>
 
-      <!-- Month Selection and Controls -->
-      <div class="bg-white p-4 rounded-lg shadow mb-6">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <!-- Controls Section -->
+      <div class="bg-white p-4 rounded-lg shadow mb-6 overflow-x-auto">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">Select Month</label>
             <input 
               type="month" 
               v-model="selectedMonth" 
               :max="new Date().toISOString().slice(0, 7)"
-              class="mt-1 block w-full rounded-md border border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+              class="w-full rounded-md border border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
               @change="loadEmployees"
             >
           </div>
@@ -23,7 +24,7 @@
             <input 
               type="date" 
               v-model="paymentDetails.paid_date" 
-              class="mt-1 block w-full rounded-md border border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+              class="w-full rounded-md border border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
             >
           </div>
           <div>
@@ -31,7 +32,7 @@
             <input 
               type="text" 
               v-model="paymentDetails.cheque_no" 
-              class="mt-1 block w-full rounded-md border border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+              class="w-full rounded-md border border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
               placeholder="Enter cheque number"
             >
           </div>
@@ -40,23 +41,21 @@
             <input 
               type="text" 
               v-model="paymentDetails.paid_from_bank_ac" 
-              class="mt-1 block w-full rounded-md border border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+              class="w-full rounded-md border border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
               placeholder="Enter bank account"
             >
           </div>
-          <div class="flex items-end">
+          <div class="flex items-end space-x-2">
             <button 
               @click="calculateAll" 
-              class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
+              class="flex-1 px-3 py-2 text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50"
               :disabled="!employeeWages.length"
             >
               Calculate All
             </button>
-          </div>
-          <div class="flex items-end">
             <button 
               @click="saveWages" 
-              class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700"
+              class="flex-1 px-3 py-2 text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 disabled:opacity-50"
               :disabled="!employeeWages.length"
             >
               Save Wages
@@ -65,112 +64,109 @@
         </div>
       </div>
 
-      <!-- Data Table -->
-      <div v-if="employeeWages.length" class="mt-8 flex flex-col">
-        <div class="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-          <div class="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
-            <div class="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
-              <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gradient-to-r from-teal-500 to-indigo-600">
-                  <tr>
-                    <th class="px-2 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
-                      <input 
-                        type="checkbox" 
-                        v-model="selectAll" 
-                        @change="toggleSelectAll"
-                        class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
-                      >
-                    </th>
-                    <th class="px-4 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">Employee Name</th>
-                    <th class="px-4 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">Bank</th>
-                    <th class="px-4 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">Branch</th>
-                    <th class="px-4 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">Account No</th>
-                    <th class="px-4 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">IFSC</th>
-                    <th class="px-4 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">Per Day Wage</th>
-                    <th class="px-4 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">Days</th>
-                    <th class="px-4 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">Gross Salary</th>
-                    <th class="px-4 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">EPF (12%)</th>
-                    <th class="px-4 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">ESIC (0.75%)</th>
-                    <th class="px-4 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">Other Deduction</th>
-                    <th class="px-4 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">Other Benefit</th>
-                    <th class="px-4 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">Net Salary</th>
-                    <th class="px-4 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">Actions</th>
-                  </tr>
-                </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
-                  <tr v-for="(wage, index) in employeeWages" :key="wage.masterRollId" class="hover:bg-gray-50">
-                    <td class="px-2 py-4 whitespace-nowrap">
-                      <input 
-                        type="checkbox" 
-                        v-model="wage.selected" 
-                        class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
-                      >
-                    </td>
-                    <td class="px-4 py-4 whitespace-nowrap">{{ wage.employeeName }}</td>
-                    <td class="px-4 py-4 whitespace-nowrap">{{ wage.bank }}</td>
-                    <td class="px-4 py-4 whitespace-nowrap">{{ wage.branch }}</td>
-                    <td class="px-4 py-4 whitespace-nowrap">{{ wage.accountNo }}</td>
-                    <td class="px-4 py-4 whitespace-nowrap">{{ wage.ifsc }}</td>
-                    <td class="px-4 py-4 whitespace-nowrap">
-                      <input 
-                        type="number" 
-                        v-model="wage.pDayWage" 
-                        class="w-20 rounded-md border border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                        @change="calculateWage(index)"
-                      >
-                    </td>
-                    <td class="px-4 py-4 whitespace-nowrap">
-                      <input 
-                        type="number" 
-                        v-model="wage.wage_Days" 
-                        class="w-16 rounded-md border border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                        @change="calculateWage(index)"
-                      >
-                    </td>
-                    <td class="px-4 py-4 whitespace-nowrap">{{ wage.gross_salary }}</td>
-                    <td class="px-4 py-4 whitespace-nowrap">{{ wage.epf_deduction }}</td>
-                    <td class="px-4 py-4 whitespace-nowrap">{{ wage.esic_deduction }}</td>
-                    <td class="px-4 py-4 whitespace-nowrap">
-                      <input 
-                        type="number" 
-                        v-model="wage.other_deduction" 
-                        class="w-20 rounded-md border border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                        @change="calculateWage(index)"
-                      >
-                    </td>
-                    <td class="px-4 py-4 whitespace-nowrap">
-                      <input 
-                        type="number" 
-                        v-model="wage.other_benefit" 
-                        class="w-20 rounded-md border border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                        @change="calculateWage(index)"
-                      >
-                    </td>
-                    <td class="px-4 py-4 whitespace-nowrap font-medium">{{ wage.net_salary }}</td>
-                    <td class="px-4 py-4 whitespace-nowrap">
-                      <button 
-                        @click="calculateWage(index)" 
-                        class="text-indigo-600 hover:text-indigo-900 mr-3"
-                      >
-                        Calculate
-                      </button>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
+      <!-- Table Section -->
+      <div v-if="employeeWages.length" class="flex-1 bg-white rounded-lg shadow overflow-hidden">
+        <div class="overflow-x-auto">
+          <div class="inline-block min-w-full align-middle">
+            <table class="min-w-full divide-y divide-gray-200">
+              <thead class="bg-gradient-to-r from-teal-500 to-indigo-600 sticky top-0">
+                <tr>
+                  <th class="sticky top-0 px-2 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
+                    <input 
+                      type="checkbox" 
+                      v-model="selectAll" 
+                      @change="toggleSelectAll"
+                      class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                    >
+                  </th>
+                  <th class="sticky top-0 px-3 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">Name</th>
+                  <th class="sticky top-0 px-3 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">Bank</th>
+                  <th class="sticky top-0 px-3 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">Branch</th>
+                  <th class="sticky top-0 px-3 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">Account</th>
+                  <th class="sticky top-0 px-3 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">IFSC</th>
+                  <th class="sticky top-0 px-3 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">Per Day</th>
+                  <th class="sticky top-0 px-3 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">Days</th>
+                  <th class="sticky top-0 px-3 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">Gross</th>
+                  <th class="sticky top-0 px-3 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">EPF</th>
+                  <th class="sticky top-0 px-3 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">ESIC</th>
+                  <th class="sticky top-0 px-3 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">Deduct</th>
+                  <th class="sticky top-0 px-3 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">Benefit</th>
+                  <th class="sticky top-0 px-3 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">Net</th>
+                  <th class="sticky top-0 px-3 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">Actions</th>
+                </tr>
+              </thead>
+              <tbody class="bg-white divide-y divide-gray-200">
+                <tr v-for="(wage, index) in employeeWages" :key="wage.masterRollId" class="hover:bg-gray-50">
+                  <td class="px-2 py-2 whitespace-nowrap">
+                    <input 
+                      type="checkbox" 
+                      v-model="wage.selected" 
+                      class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                    >
+                  </td>
+                  <td class="px-3 py-2 whitespace-nowrap text-sm">{{ wage.employeeName }}</td>
+                  <td class="px-3 py-2 whitespace-nowrap text-sm">{{ wage.bank }}</td>
+                  <td class="px-3 py-2 whitespace-nowrap text-sm">{{ wage.branch }}</td>
+                  <td class="px-3 py-2 whitespace-nowrap text-sm">{{ wage.accountNo }}</td>
+                  <td class="px-3 py-2 whitespace-nowrap text-sm">{{ wage.ifsc }}</td>
+                  <td class="px-3 py-2 whitespace-nowrap">
+                    <input 
+                      type="number" 
+                      v-model="wage.pDayWage" 
+                      class="w-16 text-sm rounded-md border border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                      @change="calculateWage(index)"
+                    >
+                  </td>
+                  <td class="px-3 py-2 whitespace-nowrap">
+                    <input 
+                      type="number" 
+                      v-model="wage.wage_Days" 
+                      class="w-14 text-sm rounded-md border border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                      @change="calculateWage(index)"
+                    >
+                  </td>
+                  <td class="px-3 py-2 whitespace-nowrap text-sm">{{ wage.gross_salary }}</td>
+                  <td class="px-3 py-2 whitespace-nowrap text-sm">{{ wage.epf_deduction }}</td>
+                  <td class="px-3 py-2 whitespace-nowrap text-sm">{{ wage.esic_deduction }}</td>
+                  <td class="px-3 py-2 whitespace-nowrap">
+                    <input 
+                      type="number" 
+                      v-model="wage.other_deduction" 
+                      class="w-16 text-sm rounded-md border border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                      @change="calculateWage(index)"
+                    >
+                  </td>
+                  <td class="px-3 py-2 whitespace-nowrap">
+                    <input 
+                      type="number" 
+                      v-model="wage.other_benefit" 
+                      class="w-16 text-sm rounded-md border border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                      @change="calculateWage(index)"
+                    >
+                  </td>
+                  <td class="px-3 py-2 whitespace-nowrap text-sm font-medium">{{ wage.net_salary }}</td>
+                  <td class="px-3 py-2 whitespace-nowrap">
+                    <button 
+                      @click="calculateWage(index)" 
+                      class="text-xs text-indigo-600 hover:text-indigo-900"
+                    >
+                      Calc
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
       </div>
 
-      <!-- No Data Message -->
-      <div v-else-if="selectedMonth" class="mt-8 bg-white p-6 rounded-lg shadow text-center">
-        <p class="text-gray-500">No employee data available for the selected month. Please select a different month or add employees to the Master Roll.</p>
+      <!-- No Data States -->
+      <div v-else-if="selectedMonth" class="flex-1 bg-white p-6 rounded-lg shadow text-center">
+        <p class="text-gray-500 text-sm sm:text-base">No employee data available for the selected month.</p>
       </div>
 
-      <!-- Initial Message -->
-      <div v-else class="mt-8 bg-white p-6 rounded-lg shadow text-center">
-        <p class="text-gray-500">Please select a month to load employee data.</p>
+      <div v-else class="flex-1 bg-white p-6 rounded-lg shadow text-center">
+        <p class="text-gray-500 text-sm sm:text-base">Please select a month to load employee data.</p>
       </div>
     </div>
   </div>
@@ -205,16 +201,21 @@ const loadEmployees = async () => {
     // Parse the selected month
     const [year, month] = selectedMonth.value.split('-');
     const startOfMonth = new Date(parseInt(year), parseInt(month) - 1, 1);
-    
+    const lastDayOfMonth = new Date(parseInt(year), parseInt(month), 0);
+    console.log('Last day of selected month:', lastDayOfMonth);
+
     // Get all employees from master roll first
     const { data: response } = await useFetch('/api/master-roll', {
       headers: { Authorization: `Bearer ${token}` },
     });
 
-    // Filter by status - only active employees
-    const activeEmployees = response.value.employees.filter(emp => emp.status === 'active');
-    console.log(`Debug: Found ${activeEmployees.length} active employees`);
-    
+    // Filter by status - only active employees and those who joined before or on the last day of selected month
+    const activeEmployees = response.value.employees.filter(emp => {
+      const joinDate = emp.dateOfJoining ? new Date(emp.dateOfJoining) : null;
+      return emp.status === 'active' && joinDate && joinDate <= lastDayOfMonth;
+    });
+    console.log(`Debug: Found ${activeEmployees.length} active employees with valid join date`);
+
     // First, get all wages to determine if this month has entries and what the latest month is
     const { data: allWagesData } = await useFetch('/api/wages', {
       headers: { Authorization: `Bearer ${token}` }
@@ -401,3 +402,58 @@ const saveWages = async () => {
   }
 };
 </script>
+
+<style>
+/* Page container styles */
+.max-w-full {
+  max-height: calc(100vh - 120px); /* Account for header and margins */
+}
+
+/* Table container styles */
+.overflow-x-auto {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(156, 163, 175, 0.5) transparent;
+}
+
+/* Custom scrollbar styles */
+.overflow-x-auto::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.overflow-x-auto::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.overflow-x-auto::-webkit-scrollbar-thumb {
+  background-color: rgba(156, 163, 175, 0.5);
+  border-radius: 4px;
+}
+
+/* Responsive table styles */
+@media (max-width: 640px) {
+  .sticky {
+    position: sticky;
+    background-color: inherit;
+    z-index: 1;
+  }
+  
+  input[type="number"] {
+    min-width: 60px;
+  }
+  
+  .whitespace-nowrap {
+    font-size: 0.75rem;
+  }
+}
+
+/* Input field hover states */
+input:hover, select:hover {
+  border-color: #6366f1;
+}
+
+/* Improve table header visibility */
+thead {
+  z-index: 2;
+}
+</style>

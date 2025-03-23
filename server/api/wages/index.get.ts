@@ -20,13 +20,13 @@ export default defineEventHandler(async (event) => {
     const month = query.month as string
     
     let wageQuery: any = { firmId }
-    let sDate;
+    let eddate;
     // If month is provided, filter by salary month
     if (month) {
       const [year, monthNum] = month.split('-')
       const startDate = new Date(parseInt(year), parseInt(monthNum) - 1, 1)
-      sDate = startDate;
       const endDate = new Date(parseInt(year), parseInt(monthNum), 0) // Last day of month
+      eddate= new Date(endDate.setHours(23, 59, 59, 999))
       
       wageQuery.salary_month = {
         $gte: startDate,

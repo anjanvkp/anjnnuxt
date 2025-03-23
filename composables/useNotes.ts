@@ -1,18 +1,37 @@
 import { ref } from 'vue';
 import type { Note, CreateNoteDto, UpdateNoteDto } from '~/server/models/Note';
 import { useToast } from './useToast';
+import createDOMPurify from 'isomorphic-dompurify';
 
 export const useNotes = () => {
   const notes = ref<Note[]>([]);
   const isLoading = ref(false);
   const toast = useToast();
 
+  // Initialize DOMPurify
+  const DOMPurify = createDOMPurify(window);
+
+  const sanitizeContent = (content: string | undefined) => {
+    if (!content) return '';
+    return DOMPurify.sanitize(content, {
+      ALLOWED_TAGS: [
+        'p', 'br', 'b', 'i', 'u', 'strong', 'em',
+        'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+        'ul', 'ol', 'li', 'blockquote', 'a', 'img'
+      ],
+      ALLOWED_ATTR: ['href', 'src', 'alt', 'title', 'target']
+    });
+  };
+
   // Fetch all notes
   const fetchNotes = async () => {
     try {
       isLoading.value = true;
       const response = await $fetch<Note[]>('/api/notes');
-      notes.value = response;
+      notes.value = response.map(note => ({
+        ...note,
+        content: sanitizeContent(note.content)
+      }));
     } catch (error: any) {
       toast.error(error.data?.message || 'Failed to fetch notes');
       throw error;
@@ -24,9 +43,13 @@ export const useNotes = () => {
   // Create a new note
   const createNote = async (noteData: CreateNoteDto) => {
     try {
+      const sanitizedData = {
+        ...noteData,
+        content: sanitizeContent(noteData.content)
+      };
       const response = await $fetch<Note>('/api/notes', {
         method: 'POST',
-        body: noteData
+        body: sanitizedData
       });
       notes.value.push(response);
       toast.success('Note created successfully');
@@ -40,13 +63,17 @@ export const useNotes = () => {
   // Update a note
   const updateNote = async (id: string, noteData: UpdateNoteDto) => {
     try {
+      const sanitizedData = {
+        ...noteData,
+        content: sanitizeContent(noteData.content)
+      };
       await $fetch(`/api/notes/${id}`, {
         method: 'PUT',
-        body: noteData
+        body: sanitizedData
       });
       const index = notes.value.findIndex(note => note.id === id);
       if (index !== -1) {
-        notes.value[index] = { ...notes.value[index], ...noteData };
+        notes.value[index] = { ...notes.value[index], ...sanitizedData };
       }
       toast.success('Note updated successfully');
     } catch (error: any) {
@@ -73,7 +100,10 @@ export const useNotes = () => {
   const getNote = async (id: string) => {
     try {
       const response = await $fetch<Note>(`/api/notes/${id}`);
-      return response;
+      return {
+        ...response,
+        content: sanitizeContent(response.content)
+      };
     } catch (error: any) {
       toast.error(error.data?.message || 'Failed to fetch note');
       throw error;

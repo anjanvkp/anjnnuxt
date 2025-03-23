@@ -66,8 +66,6 @@
           </div>
 
           <NuxtLink to="/nse" class="text-white hover:text-teal-200 transition duration-300">NSE</NuxtLink>
-          <NuxtLink to="/documents" class="text-white hover:text-teal-200 transition duration-300">Docs</NuxtLink>
-          <NuxtLink to="/notes" class="text-white hover:text-teal-200 transition duration-300">Notes</NuxtLink>
           <button @click="handleLogout"
             class="text-white hover:text-teal-200 transition duration-300 focus:outline-none">
             Logout
